@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f1610">
+<title>A Letter, For You</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Mrs+Saint+Delafield&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================================
+   0. DESIGN TOKENS
+   =========================================================== */
+:root{
+  --parchment:      #f1e6c8;
+  --parchment-dark: #e4d3a7;
+  --ivory:          #faf3e2;
+  --ink:            #2b2013;
+  --ink-soft:       #4a3826;
+  --ink-faint:      #b5a37e;
+  --burgundy:       #6e2a2e;
+  --burgundy-dark:  #4a1c1f;
+  --gold:           #b8935a;
+  --gold-light:     #dcc396;
+  --wood-dark:      #1c130d;
+  --wood-mid:       #362619;
+  --wood-light:     #4d3823;
+
+  --font-display:   'Playfair Display', serif;
+  --font-hand:      'Caveat', cursive;
+  --font-serif:     'Cormorant Garamond', serif;
+  --font-body:      'EB Garamond', serif;
+  --font-ui:        'Inter', sans-serif;
+  --font-signature: 'Mrs Saint Delafield', cursive;
+
+  --ease-cinematic: cubic-bezier(.22,.61,.36,1);
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ===========================================================
+   1. RESET & BASE
+   =========================================================== */
+*,*::before,*::after{ box-sizing:border-box; }
+html{ scroll-behavior:auto; }
+html,body{
+  margin:0; padding:0;
+  background:var(--wood-dark);
+  color:var(--ink);
+  font-family:var(--font-body);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+body{
+  opacity:0;
+  transition:opacity 1.1s ease;
+}
+body.is-ready{ opacity:1; }
+body.no-scroll{ overflow:hidden; height:100vh; }
+
+img,svg{ display:block; max-width:100%; }
+button{ font-family:inherit; background:none; border:none; cursor:pointer; padding:0; color:inherit; }
+button:focus-visible, [tabindex]:focus-visible{ outline:2px solid var(--gold-light); outline-offset:4px; }
+::selection{ background:var(--burgundy); color:var(--ivory); }
+
+/* thin custom scrollbar */
+html{ scrollbar-width:thin; scrollbar-color:var(--gold) transparent; }
+::-webkit-scrollbar{ width:6px; }
+::-webkit-scrollbar-track{ background:transparent; }
+::-webkit-scrollbar-thumb{ background:var(--gold); border-radius:4px; }
+
+/* ===========================================================
+   2. AMBIENT LAYERS (grain / dust / progress / sound)
+   =========================================================== */
+.grain-overlay{
+  position:fixed; inset:0;
+  background-image:var(--noise);
+  background-size:280px 280px;
+  opacity:.045;
+  mix-blend-mode:overlay;
+  pointer-events:none;
+  z-index:900;
+}
+
+#dust-canvas{
+  position:fixed; inset:0;
+  width:100%; height:100%;
+  pointer-events:none;
+  z-index:850;
+}
+
+.progress-track{
+  position:fixed;
+  top:14vh; right:22px;
+  width:2px; height:72vh;
+  background:rgba(184,147,90,.18);
+  z-index:920;
+}
+.progress-fill{
+  width:100%; height:0%;
+  background:linear-gradient(var(--gold-light), var(--gold));
+  box-shadow:0 0 8px rgba(216,189,138,.6);
+}
+
+.sound-toggle{
+  position:fixed; top:22px; left:22px;
+  z-index:920;
+  width:38px; height:38px;
+  display:flex; align-items:center; justify-content:center;
+  color:var(--gold-light);
+  opacity:.75;
+  transition:opacity .3s ease, transform .3s ease;
+}
+.sound-toggle:hover{ opacity:1; transform:scale(1.08); }
+.sound-toggle svg{ width:19px; height:19px; }
+.sound-toggle .icon-off{ display:none; }
+.sound-toggle.is-muted .icon-on{ display:none; }
+.sound-toggle.is-muted .icon-off{ display:block; }
+
+@media (max-width:680px){
+  .progress-track{ display:none; }
+}
+
+/* ===========================================================
+   3. HERO / ENVELOPE SCENE
+   =========================================================== */
+.hero{
+  position:fixed; inset:0;
+  z-index:800;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse 60% 45% at 50% 38%, rgba(255,214,150,.10), transparent 60%),
+    radial-gradient(ellipse 120% 90% at 50% 100%, var(--wood-light), var(--wood-dark) 70%);
+  transition:visibility 0s linear 1.6s;
+}
+.hero.is-hidden{ visibility:hidden; }
+
+.desk-vignette{
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse 70% 70% at 50% 50%, transparent 40%, rgba(0,0,0,.55) 100%);
+  pointer-events:none;
+}
+
+.candle-glow{
+  position:absolute;
+  top:30%; left:50%;
+  width:520px; height:520px;
+  transform:translate(-50%,-50%);
+  background:radial-gradient(circle, rgba(255,196,110,.16), transparent 65%);
+  filter:blur(6px);
+  animation:flicker 5.5s ease-in-out infinite;
+  pointer-events:none;
+}
+@keyframes flicker{
+  0%,100%{ opacity:.85; transform:translate(-50%,-50%) scale(1); }
+  35%{ opacity:1; transform:translate(-50%,-50%) scale(1.04); }
+  60%{ opacity:.75; transform:translate(-50%,-50%) scale(.98); }
+  80%{ opacity:.95; transform:translate(-50%,-50%) scale(1.02); }
+}
+
+.hero-inner{
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+  gap:34px;
+  padding:24px;
+  text-align:center;
+}
+
+.hero-hint{
+  font-family:var(--font-serif);
+  font-style:italic;
+  font-weight:400;
+  font-size:clamp(1.05rem, 2.4vw, 1.4rem);
+  color:var(--gold-light);
+  letter-spacing:.02em;
+  opacity:0;
+}
+
+.envelope-scene{
+  position:relative;
+  width:min(360px, 78vw);
+  perspective:1400px;
+}
+
+.letter-peek{
+  position:absolute;
+  left:6%; right:6%;
+  top:6%;
+  height:88%;
+  background:
+    var(--noise),
+    linear-gradient(155deg, var(--ivory), var(--parchment) 70%);
+  background-blend-mode:overlay;
+  background-size:280px 280px, auto;
+  border-radius:2px;
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+  opacity:0;
+  transform:translateY(6%) scale(.92);
+  z-index:1;
+  clip-path:polygon(1% 3%,4% 0%,96% 1%,99% 4%,100% 97%,95% 100%,3% 99%,0% 95%);
+}
+.letter-peek::before{
+  content:'Dear Friend,';
+  position:absolute; top:16%; left:0; right:0;
+  text-align:center;
+  font-family:var(--font-hand);
+  font-size:1.15rem;
+  color:var(--ink-faint);
+}
+
+.envelope{
+  position:relative;
+  width:100%;
+  aspect-ratio:3/2;
+  z-index:2;
+}
+
+.envelope-pocket{
+  position:absolute; inset:0;
+  background:
+    var(--noise),
+    linear-gradient(160deg, var(--parchment), var(--parchment-dark) 75%);
+  background-blend-mode:overlay;
+  background-size:280px 280px, auto;
+  clip-path:polygon(0.5% 4%,3% 0%,97% 1%,99.5% 3.5%,100% 96%,96.5% 100%,3.5% 99%,0% 95.5%);
+  box-shadow:var(--shadow-soft), 0 24px 55px rgba(0,0,0,.4);
+}
+.envelope-pocket::after{
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.14) 100%);
+}
+
+.envelope-name{
+  position:absolute;
+  bottom:16%; left:0; right:0;
+  text-align:center;
+  font-family:var(--font-hand);
+  font-weight:600;
+  font-size:clamp(1.4rem, 4vw, 1.9rem);
+  color:var(--ink-soft);
+  z-index:1;
+  letter-spacing:.01em;
+}
+
+.envelope-stamp{
+  position:absolute;
+  top:9%; right:8%;
+  width:15%;
+  aspect-ratio:4/5;
+  background:
+    repeating-radial-gradient(circle at 0 0, transparent 0 2px, var(--parchment) 2px 6px),
+    linear-gradient(160deg, #d8c39a, #c2a877);
+  padding:3px;
+  z-index:1;
+}
+.envelope-stamp::before{
+  content:'';
+  position:absolute; inset:3px;
+  border:1px solid rgba(74,28,31,.35);
+}
+.envelope-stamp svg{ position:absolute; inset:0; width:100%; height:100%; padding:22%; }
+
+.envelope-flap{
+  position:absolute;
+  top:0; left:0; right:0;
+  height:64%;
+  background:
+    var(--noise),
+    linear-gradient(165deg, var(--parchment-dark), var(--parchment) 60%);
+  background-blend-mode:overlay;
+  background-size:280px 280px, auto;
+  clip-path:polygon(0 0, 100% 0, 50% 96%);
+  transform-origin:top center;
+  transform-style:preserve-3d;
+  backface-visibility:hidden;
+  box-shadow:0 14px 28px rgba(0,0,0,.28);
+  z-index:3;
+  transition:none;
+}
+
+.wax-seal{
+  position:absolute;
+  top:52%; left:50%;
+  width:64px; height:64px;
+  transform:translate(-50%,-50%);
+  z-index:4;
+  cursor:pointer;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.4));
+}
+.wax-seal .seal-half{
+  position:absolute; inset:0;
+  border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #8a3a3f, var(--burgundy) 55%, var(--burgundy-dark) 100%);
+  display:flex; align-items:center; justify-content:center;
+}
+.wax-seal .seal-half.left{ clip-path:inset(0 50% 0 0); }
+.wax-seal .seal-half.right{ clip-path:inset(0 0 0 50%); }
+.wax-seal svg{ width:60%; height:60%; opacity:.85; }
+.wax-seal .seal-half svg{ position:absolute; top:20%; left:20%; width:60%; height:60%; }
+
+.open-btn{
+  font-family:var(--font-ui);
+  font-size:.82rem;
+  letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--gold-light);
+  padding-bottom:5px;
+  position:relative;
+  opacity:0;
+}
+.open-btn::after{
+  content:'';
+  position:absolute; left:0; bottom:0;
+  width:100%; height:1px;
+  background:var(--gold-light);
+  transform:scaleX(.35);
+  transform-origin:left;
+  transition:transform .45s var(--ease-cinematic);
+}
+.open-btn:hover::after, .open-btn:focus-visible::after{ transform:scaleX(1); }
+
+.transition-veil{
+  position:fixed; inset:0;
+  z-index:950;
+  background:var(--ivory);
+  opacity:0;
+  pointer-events:none;
+}
+
+/* ===========================================================
+   4. MAIN CONTENT — shared section rules
+   =========================================================== */
+#main-content{
+  position:relative;
+  background:
+    radial-gradient(ellipse 90% 50% at 50% 0%, rgba(255,235,200,.35), transparent 60%),
+    linear-gradient(180deg, var(--ivory), var(--parchment) 12%, var(--parchment) 88%, #ece0bd);
+}
+
+.section-heading{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-weight:600;
+  font-size:clamp(1.6rem, 4vw, 2.4rem);
+  color:var(--ink-soft);
+  text-align:center;
+  margin:0 0 clamp(2.5rem, 6vw, 4.5rem);
+  letter-spacing:.01em;
+}
+
+/* ---- Section 1: The Letter ---- */
+.letter-section{ position:relative; }
+.letter-pin-wrapper{ position:relative; height:340vh; }
+.letter-page{
+  position:relative;
+  height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:6vh 5vw;
+  overflow:hidden;
+}
+
+.paper-sheet{
+  position:relative;
+  width:min(680px, 92vw);
+  max-height:82vh;
+  padding:clamp(2.2rem,5vw,4.2rem) clamp(1.8rem,5vw,4rem);
+  background:
+    var(--noise),
+    linear-gradient(170deg, var(--ivory), var(--parchment) 65%, var(--parchment-dark));
+  background-blend-mode:overlay;
+  background-size:280px 280px, auto;
+  clip-path:polygon(0.6% 1.5%,2.2% 0%,98% 0.8%,99.6% 2.4%,100% 97.6%,98.2% 100%,1.6% 99.2%,0% 96.8%);
+  box-shadow:0 30px 70px rgba(30,18,6,.28), 0 4px 14px rgba(30,18,6,.18);
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+.paper-sheet::-webkit-scrollbar{ width:4px; }
+
+.paper-sheet::before{
+  content:'';
+  position:absolute; inset:0;
+  background:
+    linear-gradient(100deg, transparent 30%, rgba(120,90,50,.05) 31%, transparent 33%),
+    linear-gradient(80deg, transparent 62%, rgba(120,90,50,.04) 63%, transparent 65%);
+  pointer-events:none;
+}
+
+.letter-content{ position:relative; }
+
+.letter-line{
+  font-family:var(--font-hand);
+  font-weight:500;
+  font-size:clamp(1.2rem, 2.6vw, 1.55rem);
+  line-height:1.55;
+  color:var(--ink);
+  margin:0 0 1.15em;
+}
+.letter-line.salutation{
+  font-size:clamp(1.5rem, 3.4vw, 1.9rem);
+  margin-bottom:1.3em;
+}
+
+.ink-char{
+  display:inline-block;
+  opacity:0;
+  filter:blur(3px);
+  color:var(--ink-faint);
+}
+
+.pressed-flower{
+  position:absolute;
+  top:-18px; right:-6px;
+  width:64px; height:74px;
+  transform:rotate(8deg);
+  z-index:3;
+  opacity:.92;
+  mix-blend-mode:multiply;
+}
+.pressed-flower:hover{ transform:rotate(8deg) scale(1.06); }
+.petal{ opacity:.55; }
+.petal:nth-of-type(odd){ fill:var(--burgundy); }
+.petal:nth-of-type(even){ fill:#9c8a4e; }
+.flower-center{ fill:var(--gold); opacity:.8; }
+.flower-stem{ stroke:#6b5c3f; stroke-width:2; opacity:.55; fill:none; }
+.flower-leaf{ fill:#7a7a4f; opacity:.45; }
+
+.scroll-cue{
+  position:absolute;
+  bottom:4vh; left:50%;
+  transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  font-family:var(--font-ui);
+  font-size:.7rem;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  opacity:0;
+  z-index:5;
+}
+.scroll-cue .chevron{
+  width:9px; height:9px;
+  border-right:1px solid var(--ink-soft);
+  border-bottom:1px solid var(--ink-soft);
+  transform:rotate(45deg);
+  animation:cue-bob 2.6s ease-in-out infinite;
+}
+@keyframes cue-bob{
+  0%,100%{ transform:rotate(45deg) translate(0,0); opacity:.55; }
+  50%{ transform:rotate(45deg) translate(3px,3px); opacity:1; }
+}
+
+/* ---- Section 2: Memories ---- */
+.memories-section{
+  padding:clamp(5rem,12vw,9rem) 5vw clamp(6rem,14vw,10rem);
+}
+.polaroid-row{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:clamp(-2rem, -4vw, -1rem) clamp(1rem,2vw,2rem);
+  max-width:1100px;
+  margin:0 auto;
+}
+.polaroid{
+  width:min(230px, 42vw);
+  background:linear-gradient(170deg,#fffaf0,#f3e9d1);
+  padding:14px 14px 22px;
+  box-shadow:0 18px 34px rgba(30,18,6,.22), 0 2px 6px rgba(30,18,6,.15);
+  transform-style:preserve-3d;
+  will-change:transform;
+  opacity:0;
+}
+.polaroid-photo{
+  position:relative;
+  aspect-ratio:1/1.02;
+  overflow:hidden;
+  background-image:var(--noise);
+  background-blend-mode:overlay;
+  background-size:280px 280px;
+}
+.polaroid-photo::after{
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(circle at 50% 40%, transparent 45%, rgba(20,10,0,.25) 100%);
+}
+.polaroid:nth-child(1) .polaroid-photo{ background-color:#c99a6b; }
+.polaroid:nth-child(2) .polaroid-photo{ background-color:#b98a72; }
+.polaroid:nth-child(3) .polaroid-photo{ background-color:#a98f5e; }
+.polaroid:nth-child(4) .polaroid-photo{ background-color:#c2a17e; }
+.polaroid-tag{
+  font-family:var(--font-hand);
+  font-weight:600;
+  font-size:1.15rem;
+  color:var(--ink);
+  margin:.7em 0 .15em;
+  text-align:center;
+}
+.polaroid-note{
+  font-family:var(--font-serif);
+  font-style:italic;
+  font-size:.85rem;
+  color:var(--ink-soft);
+  text-align:center;
+  margin:0;
+}
+
+/* ---- Section 3: Appreciation ---- */
+.appreciation-section{
+  padding:clamp(4rem,10vw,7rem) 6vw clamp(6rem,12vw,9rem);
+  max-width:640px;
+  margin:0 auto;
+}
+.appreciation-list{
+  list-style:none;
+  margin:0; padding:0;
+}
+.appreciation-line{
+  font-family:var(--font-hand);
+  font-weight:500;
+  font-size:clamp(1.4rem, 3.6vw, 2rem);
+  color:var(--ink);
+  margin-bottom:clamp(1.6rem, 4vw, 2.4rem);
+  position:relative;
+  padding-left:clamp(1.4rem, 3vw, 2rem);
+}
+.appreciation-line::before{
+  content:'—';
+  position:absolute; left:0; top:.05em;
+  color:var(--gold);
+  opacity:0;
+}
+.ink-underline{
+  display:block;
+  width:min(220px, 60%);
+  height:10px;
+  margin-top:2px;
+}
+.ink-underline path{
+  fill:none;
+  stroke:var(--gold);
+  stroke-width:1.4;
+  stroke-linecap:round;
+  stroke-dasharray:1;
+  stroke-dashoffset:1;
+}
+
+/* ---- Section 4: Birthday Message ---- */
+.birthday-section{
+  padding:clamp(6rem,14vw,10rem) 6vw;
+  text-align:center;
+  position:relative;
+}
+.big-heading{
+  font-family:var(--font-display);
+  font-weight:700;
+  font-style:italic;
+  font-size:clamp(2.4rem, 7vw, 4.6rem);
+  color:var(--burgundy-dark);
+  margin:0 0 clamp(2rem,5vw,3rem);
+  opacity:0;
+  transform:translateY(24px) scale(.97);
+}
+.message-body{
+  max-width:620px;
+  margin:0 auto;
+}
+.message-body p{
+  font-family:var(--font-serif);
+  font-size:clamp(1.2rem, 2.6vw, 1.5rem);
+  line-height:1.75;
+  color:var(--ink-soft);
+  margin:0 0 1.4em;
+  opacity:0;
+  transform:translateY(18px);
+}
+
+/* ---- Section 5: Final ---- */
+.final-section{
+  position:relative;
+  min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  padding:8vh 6vw 12vh;
+  overflow:hidden;
+  background:linear-gradient(180deg,#ece0bd,#e2cf9c 40%, #d9bf87);
+}
+.final-section::before{
+  content:'';
+  position:absolute; inset:0;
+  background:radial-gradient(ellipse 70% 60% at 50% 45%, rgba(110,42,46,.16), transparent 70%);
+  opacity:0;
+}
+#petals-canvas{
+  position:absolute; inset:0;
+  width:100%; height:100%;
+  pointer-events:none;
+}
+.final-content{
+  position:relative; z-index:2;
+  text-align:center;
+  max-width:640px;
+}
+.final-heading{
+  font-family:var(--font-display);
+  font-style:italic;
+  font-weight:600;
+  font-size:clamp(2rem, 5.4vw, 3.2rem);
+  color:var(--burgundy-dark);
+  margin:0 0 1.6em;
+  opacity:0;
+  transform:translateY(16px);
+}
+.final-line{
+  font-family:var(--font-serif);
+  font-size:clamp(1.15rem, 2.6vw, 1.5rem);
+  font-style:italic;
+  color:var(--ink-soft);
+  margin:0 0 .5em;
+  opacity:0;
+  transform:translateY(14px);
+}
+.final-thanks{
+  font-family:var(--font-serif);
+  font-size:clamp(1.2rem, 2.8vw, 1.6rem);
+  color:var(--ink);
+  margin:1.3em 0 1.8em;
+  opacity:0;
+  transform:translateY(14px);
+}
+.signature{
+  font-family:var(--font-signature);
+  font-size:clamp(2.4rem, 6vw, 3.4rem);
+  color:var(--ink);
+  margin:0 0 1.6rem;
+  opacity:0;
+  clip-path:inset(0 100% 0 0);
+}
+.pressed-flower-final{
+  width:90px; height:105px;
+  margin:0 auto;
+  opacity:0;
+  transform:translateY(10px) scale(.9);
+}
+.hidden-note-trigger{
+  position:absolute;
+  bottom:6%; right:4%;
+  width:34px; height:34px;
+  opacity:.5;
+  z-index:3;
+}
+.hidden-note-trigger:hover{ opacity:.85; }
+.hidden-note-trigger .seal-half{
+  position:absolute; inset:0; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #8a3a3f, var(--burgundy) 60%, var(--burgundy-dark) 100%);
+}
+
+/* ---- Secret note tooltip (shared) ---- */
+.secret-note{
+  position:absolute;
+  bottom:calc(100% + 10px);
+  left:50%;
+  transform:translateX(-50%);
+  width:max-content;
+  max-width:220px;
+  background:var(--ivory);
+  color:var(--ink);
+  font-family:var(--font-serif);
+  font-style:italic;
+  font-size:.85rem;
+  line-height:1.4;
+  padding:10px 14px;
+  box-shadow:0 10px 24px rgba(20,10,0,.3);
+  clip-path:polygon(1% 4%,4% 0%,96% 2%,100% 6%,99% 96%,95% 100%,3% 98%,0% 93%);
+  z-index:20;
+  pointer-events:none;
+}
+
+/* ===========================================================
+   5. RESPONSIVE
+   =========================================================== */
+@media (max-width:768px){
+  .letter-pin-wrapper{ height:auto !important; }
+  .letter-page{ height:auto; padding:12vh 5vw; }
+  .paper-sheet{ max-height:none; overflow-y:visible; }
+  .polaroid-row{ gap:1.4rem; }
+  .polaroid{ width:min(260px, 70vw); }
+}
+body.reduced-motion .letter-pin-wrapper{ height:auto !important; }
+body.reduced-motion .letter-page{ height:auto; padding:12vh 5vw; }
+body.reduced-motion .paper-sheet{ max-height:none; overflow-y:visible; }
+
+@media (max-width:480px){
+  .wax-seal{ width:54px; height:54px; }
+  .hidden-note-trigger{ width:28px; height:28px; }
+}
+
+/* ===========================================================
+   6. REDUCED MOTION
+   =========================================================== */
+@media (prefers-reduced-motion: reduce){
+  .candle-glow{ animation:none; }
+  .scroll-cue .chevron{ animation:none; }
+}
+</style>
+</head>
+<body class="no-scroll">
+
+<div class="grain-overlay" aria-hidden="true"></div>
+<canvas id="dust-canvas" aria-hidden="true"></canvas>
+
+<div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+
+<button class="sound-toggle" id="sound-toggle" aria-label="Toggle sound" aria-pressed="true">
+  <svg class="icon-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M17 8a5 5 0 0 1 0 8"/><path d="M19.5 5.5a9 9 0 0 1 0 13"/></svg>
+  <svg class="icon-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16 9l5 6M21 9l-5 6"/></svg>
+</button>
+
+<!-- ===================== HERO / ENVELOPE ===================== -->
+<section class="hero" id="hero">
+  <div class="desk-vignette" aria-hidden="true"></div>
+  <div class="candle-glow" aria-hidden="true"></div>
+
+  <div class="hero-inner">
+    <p class="hero-hint" id="hero-hint">Someone left you a letter&hellip;</p>
+
+    <div class="envelope-scene">
+      <div class="letter-peek" id="letter-peek" aria-hidden="true"></div>
+
+      <div class="envelope" id="envelope">
+        <div class="envelope-pocket"></div>
+        <div class="envelope-name" id="envelope-name">For Friend,</div>
+
+        <div class="envelope-stamp" id="stamp" role="button" tabindex="0" aria-label="A small stamp — click to see when this was sent">
+          <svg viewBox="0 0 40 40"><path d="M20 6 C24 12 30 14 30 20 C30 27 25 32 20 34 C15 32 10 27 10 20 C10 14 16 12 20 6Z" fill="none" stroke="#4a1c1f" stroke-width="1.2" opacity=".7"/></svg>
+        </div>
+
+        <div class="envelope-flap" id="flap"></div>
+
+        <div class="wax-seal" id="wax-seal" role="button" tabindex="0" aria-label="Wax seal — click to open your letter">
+          <div class="seal-half left">
+            <svg viewBox="0 0 40 40"><path d="M20 8c3 5 8 6 8 12 0 6-4 10-8 12" fill="none" stroke="#e8d6b0" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <div class="seal-half right">
+            <svg viewBox="0 0 40 40"><path d="M20 8c-3 5-8 6-8 12 0 6 4 10 8 12" fill="none" stroke="#e8d6b0" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="open-btn" id="open-btn">Open it.</button>
+  </div>
+</section>
+
+<div class="transition-veil" id="veil" aria-hidden="true"></div>
+
+<!-- ===================== MAIN SCROLL CONTENT ===================== -->
+<main id="main-content">
+
+  <section class="letter-section" id="letter-section">
+    <div class="letter-pin-wrapper" id="letter-pin-wrapper">
+      <div class="letter-page" id="letter-page">
+        <div class="paper-sheet" id="paper-sheet">
+          <div class="letter-content" id="letter-content">
+            <div class="pressed-flower" id="flower-secret" role="button" tabindex="0" aria-label="A pressed flower — click to see what's underneath">
+              <svg viewBox="0 0 120 140" width="100%" height="100%">
+                <g transform="translate(60,55)">
+                  <ellipse class="petal" rx="10" ry="24" transform="rotate(0)"/>
+                  <ellipse class="petal" rx="10" ry="24" transform="rotate(60)"/>
+                  <ellipse class="petal" rx="10" ry="24" transform="rotate(120)"/>
+                  <ellipse class="petal" rx="10" ry="24" transform="rotate(180)"/>
+                  <ellipse class="petal" rx="10" ry="24" transform="rotate(240)"/>
+                  <ellipse class="petal" rx="10" ry="24" transform="rotate(300)"/>
+                  <circle r="7" class="flower-center"/>
+                </g>
+                <path class="flower-stem" d="M60,80 C55,100 65,115 58,135"/>
+                <path class="flower-leaf" d="M58,105 C45,100 40,110 48,118 C54,116 58,112 58,105 Z"/>
+              </svg>
+            </div>
+            <!-- paragraphs injected by JS -->
+          </div>
+        </div>
+        <div class="scroll-cue" id="scroll-cue"><span>keep scrolling</span><span class="chevron"></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="memories-section" id="memories-section">
+    <h2 class="section-heading" id="memories-heading"></h2>
+    <div class="polaroid-row" id="polaroid-row"></div>
+  </section>
+
+  <section class="appreciation-section" id="appreciation-section">
+    <h2 class="section-heading" id="appreciation-heading"></h2>
+    <ul class="appreciation-list" id="appreciation-list"></ul>
+  </section>
+
+  <section class="birthday-section" id="birthday-section">
+    <h2 class="big-heading" id="birthday-heading"></h2>
+    <div class="message-body" id="message-body"></div>
+  </section>
+
+  <section class="final-section" id="final-section">
+    <canvas id="petals-canvas" aria-hidden="true"></canvas>
+    <div class="final-content">
+      <h2 class="final-heading" id="final-heading"></h2>
+      <p class="final-line" id="final-line-1"></p>
+      <p class="final-line" id="final-line-2"></p>
+      <p class="final-thanks" id="final-thanks"></p>
+      <p class="signature" id="signature"></p>
+      <div class="pressed-flower-final" aria-hidden="true">
+        <svg viewBox="0 0 120 140" width="100%" height="100%">
+          <g transform="translate(60,55)">
+            <ellipse class="petal" rx="11" ry="26" transform="rotate(0)"/>
+            <ellipse class="petal" rx="11" ry="26" transform="rotate(51)"/>
+            <ellipse class="petal" rx="11" ry="26" transform="rotate(102)"/>
+            <ellipse class="petal" rx="11" ry="26" transform="rotate(153)"/>
+            <ellipse class="petal" rx="11" ry="26" transform="rotate(204)"/>
+            <ellipse class="petal" rx="11" ry="26" transform="rotate(255)"/>
+            <ellipse class="petal" rx="11" ry="26" transform="rotate(306)"/>
+            <circle r="8" class="flower-center"/>
+          </g>
+          <path class="flower-stem" d="M60,82 C54,102 66,116 59,136"/>
+        </svg>
+      </div>
+    </div>
+    <div class="hidden-note-trigger" id="hidden-seal" role="button" tabindex="0" aria-label="A small hidden seal">
+      <div class="seal-half"></div>
+    </div>
+  </section>
+
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ===========================================================
+   PERSONALIZE YOUR LETTER HERE
+   Everything a visitor reads comes from this one object.
+   Change the strings below — nothing else needs to be touched.
+   =========================================================== */
+const CONTENT = {
+  friendName:  "Friend",       // the person this is for, e.g. "Sarah"
+  senderName:  "Your Friend",  // you, e.g. "Alex"
+
+  heroHint:  "Someone left you a letter\u2026",
+  openLabel: "Open it.",
+
+  letterParagraphs: [
+    "Dear Friend,",
+    "I\u2019ve been sitting here for a while now, trying to figure out how to start this \u2014 which is silly, because I\u2019ve known you long enough that I shouldn\u2019t need an opening line at all.",
+    "But today felt like it deserved one. So: happy birthday. I mean that in the fullest, least casual way those two words can be meant.",
+    "There\u2019s a version of this letter where I list all the reasons I\u2019m glad you exist, but I think you\u2019d rather I just told you the truth \u2014 that some days are simply better because you\u2019re in them, and I don\u2019t think I\u2019ve ever told you that outright.",
+    "So consider this me finally saying it. In ink. Where it can\u2019t be casually forgotten, or scrolled past.",
+    "Keep reading \u2014 there\u2019s more below, if you\u2019re willing to stay a while."
+  ],
+
+  memoriesHeading: "Some Days I Kept",
+  memories: [
+    { tag: "Remember this?", note: "We almost didn\u2019t go. I\u2019m glad we did." },
+    { tag: "That ridiculous day\u2026", note: "Nothing went to plan. It was perfect anyway." },
+    { tag: "The moment we couldn\u2019t stop laughing.", note: "I still don\u2019t remember what started it." },
+    { tag: "One of my favorite memories.", note: "An ordinary afternoon that somehow wasn\u2019t." }
+  ],
+
+  appreciationHeading: "Things I Appreciate About You",
+  appreciationLines: [
+    "Your kindness.",
+    "Your stupid jokes.",
+    "The way you always show up.",
+    "How you make ordinary days memorable.",
+    "Your laugh \u2014 the unfiltered one, not the polite one.",
+    "How easy it is to just be myself, around you."
+  ],
+
+  birthdayHeading: "Today Is Your Day.",
+  birthdayParagraphs: [
+    "I don\u2019t say this often enough, so let me put it in writing, where it can\u2019t be taken back or brushed off:",
+    "I\u2019m grateful for you \u2014 not only today, but on all the unremarkable days too, the ones that don\u2019t ask to be remembered and somehow are, simply because you were in them.",
+    "You have a way of making things lighter just by showing up. I don\u2019t know if you\u2019ve ever noticed that about yourself. I have.",
+    "So today, of all days \u2014 let yourself be celebrated. Eat something ridiculous. Laugh too loud. Take the compliments without deflecting them, just this once."
+  ],
+
+  finalLines: [
+    "Some people enter your life\u2026",
+    "\u2026and somehow make it feel a little more like home."
+  ],
+  finalThanks: "Thank you for being one of those people.",
+
+  secrets: {
+    flower: "I\u2019ve kept this one for a while. Some things are worth holding onto.",
+    seal:   "If you\u2019re reading this twice, that means it mattered. Good.",
+    stampPrefix: "Postmarked \u2014"
+  }
+};
+
+/* ===========================================================
+   UTILITIES
+   =========================================================== */
+const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isCoarsePointer = window.matchMedia('(pointer:coarse)').matches;
+if (prefersReduced) document.body.classList.add('reduced-motion');
+
+function hashRotate(i){
+  const v = Math.sin(i * 12.9898) * 43758.5453;
+  const frac = v - Math.floor(v);
+  return (frac * 4 - 2).toFixed(2); // -2..2 deg
+}
+
+function wrapChars(text){
+  let out = '';
+  let ci = 0;
+  for (const ch of text){
+    if (ch === ' '){
+      out += '<span class="ink-char ink-space"> </span>';
+    } else {
+      out += `<span class="ink-char" style="transform:rotate(${hashRotate(ci)}deg)">${ch}</span>`;
+    }
+    ci++;
+  }
+  return out;
+}
+
+function el(tag, className, html){
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (html !== undefined) node.innerHTML = html;
+  return node;
+}
+
+function formatToday(){
+  try{
+    return new Date().toLocaleDateString(undefined, { day:'numeric', month:'long', year:'numeric' });
+  } catch(e){ return ''; }
+}
+
+/* Secret note tooltip, shared by every hidden detail */
+function attachSecret(triggerEl, message){
+  triggerEl.style.position = triggerEl.style.position || 'relative';
+  function toggle(e){
+    if (e) e.stopPropagation();
+    const existing = triggerEl.querySelector('.secret-note');
+    if (existing){ existing.remove(); return; }
+    document.querySelectorAll('.secret-note').forEach(n => n.remove());
+    const note = el('span', 'secret-note', message);
+    triggerEl.appendChild(note);
+    if (window.gsap){
+      gsap.fromTo(note, { opacity:0, y:6 }, { opacity:1, y:0, duration:.5, ease:'power2.out' });
+    }
+    setTimeout(() => {
+      document.addEventListener('click', function onDocClick(ev){
+        if (!triggerEl.contains(ev.target)){ note.remove(); document.removeEventListener('click', onDocClick); }
+      });
+    }, 0);
+  }
+  triggerEl.addEventListener('click', toggle);
+  triggerEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(e); } });
+}
+
+/* ===========================================================
+   RENDER CONTENT INTO THE PAGE
+   =========================================================== */
+function renderContent(){
+  document.getElementById('hero-hint').textContent = CONTENT.heroHint;
+  document.getElementById('open-btn').textContent = CONTENT.openLabel;
+  document.getElementById('envelope-name').textContent = `For ${CONTENT.friendName},`;
+  document.querySelector('.letter-peek::before');
+  const peek = document.getElementById('letter-peek');
+  peek.style.setProperty('--peek-text', `"Dear ${CONTENT.friendName},"`);
+
+  // --- Letter paragraphs ---
+  const letterContent = document.getElementById('letter-content');
+  CONTENT.letterParagraphs.forEach((text, i) => {
+    const p = el('p', 'letter-line' + (i === 0 ? ' salutation' : ''), wrapChars(text.replace('Friend', CONTENT.friendName)));
+    letterContent.appendChild(p);
+  });
+
+  // --- Memories ---
+  document.getElementById('memories-heading').textContent = CONTENT.memoriesHeading;
+  const row = document.getElementById('polaroid-row');
+  CONTENT.memories.forEach((m) => {
+    const card = el('div', 'polaroid');
+    card.appendChild(el('div', 'polaroid-photo'));
+    card.appendChild(el('p', 'polaroid-tag', m.tag));
+    card.appendChild(el('p', 'polaroid-note', m.note));
+    row.appendChild(card);
+  });
+
+  // --- Appreciation ---
+  document.getElementById('appreciation-heading').textContent = CONTENT.appreciationHeading;
+  const list = document.getElementById('appreciation-list');
+  CONTENT.appreciationLines.forEach((text) => {
+    const li = el('li', 'appreciation-line');
+    const span = el('span', null, wrapChars(text));
+    li.appendChild(span);
+    const svgWrap = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svgWrap.setAttribute('class','ink-underline');
+    svgWrap.setAttribute('viewBox','0 0 200 12');
+    svgWrap.innerHTML = '<path pathLength="1" d="M2,7 Q50,2 100,6 T198,5"></path>';
+    li.appendChild(svgWrap);
+    list.appendChild(li);
+  });
+
+  // --- Birthday message ---
+  document.getElementById('birthday-heading').textContent = CONTENT.birthdayHeading;
+  const msgBody = document.getElementById('message-body');
+  CONTENT.birthdayParagraphs.forEach((text) => {
+    msgBody.appendChild(el('p', null, text));
+  });
+
+  // --- Final section ---
+  document.getElementById('final-heading').textContent = `Happy Birthday, ${CONTENT.friendName}.`;
+  document.getElementById('final-line-1').textContent = CONTENT.finalLines[0];
+  document.getElementById('final-line-2').textContent = CONTENT.finalLines[1];
+  document.getElementById('final-thanks').textContent = CONTENT.finalThanks;
+  document.getElementById('signature').textContent = `\u2014 ${CONTENT.senderName}`;
+
+  // --- Secrets ---
+  attachSecret(document.getElementById('flower-secret'), CONTENT.secrets.flower);
+  attachSecret(document.getElementById('hidden-seal'), CONTENT.secrets.seal);
+  attachSecret(document.getElementById('stamp'), `${CONTENT.secrets.stampPrefix} ${formatToday()}`);
+}
+
+/* ===========================================================
+   SOFT PAPER SOUND (synthesized, no audio file needed)
+   =========================================================== */
+let audioCtx = null;
+let soundMuted = false;
+
+function playPaperSound(){
+  if (soundMuted) return;
+  try{
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const duration = 1.1;
+    const bufferSize = audioCtx.sampleRate * duration;
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++){ data[i] = (Math.random() * 2 - 1); }
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = buffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 1800;
+    filter.Q.value = 0.6;
+
+    const gainNode = audioCtx.createGain();
+    const now = audioCtx.currentTime;
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.05, now + 0.25);
+    gainNode.gain.linearRampToValueAtTime(0, now + duration);
+
+    source.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    source.start();
+  } catch(e){ /* audio not critical to the experience */ }
+}
+
+document.getElementById('sound-toggle').addEventListener('click', function(){
+  soundMuted = !soundMuted;
+  this.classList.toggle('is-muted', soundMuted);
+  this.setAttribute('aria-pressed', String(!soundMuted));
+});
+
+/* ===========================================================
+   DUST PARTICLES (ambient canvas, whole page)
+   =========================================================== */
+function initDust(){
+  const canvas = document.getElementById('dust-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, dpr;
+  const mouse = { x:0, y:0, active:false };
+  let particles = [];
+  const COUNT = prefersReduced ? 0 : (isCoarsePointer ? 26 : 55);
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = window.innerWidth; h = window.innerHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    canvas.style.width = w + 'px'; canvas.style.height = h + 'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  function makeParticle(initial){
+    return {
+      x: Math.random() * w,
+      y: initial ? Math.random() * h : h + 10,
+      r: Math.random() * 1.5 + 0.4,
+      speedY: -(Math.random() * 0.16 + 0.05),
+      speedX: (Math.random() - 0.5) * 0.08,
+      alpha: Math.random() * 0.35 + 0.08,
+      phase: Math.random() * Math.PI * 2
+    };
+  }
+
+  resize();
+  for (let i=0;i<COUNT;i++) particles.push(makeParticle(true));
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; mouse.active = true; });
+  window.addEventListener('mouseleave', () => { mouse.active = false; });
+
+  let t = 0;
+  function frame(){
+    if (document.hidden) { requestAnimationFrame(frame); return; }
+    ctx.clearRect(0,0,w,h);
+    t += 16;
+    particles.forEach(p => {
+      p.y += p.speedY;
+      p.x += p.speedX + Math.sin(t * 0.0006 + p.phase) * 0.05;
+      if (mouse.active){
+        const dx = p.x - mouse.x, dy = p.y - mouse.y;
+        const dist = Math.hypot(dx,dy);
+        if (dist < 110 && dist > 0.01){
+          const f = (110 - dist) / 110 * 0.5;
+          p.x += (dx/dist) * f;
+          p.y += (dy/dist) * f;
+        }
+      }
+      if (p.y < -10 || p.x < -10 || p.x > w + 10){ Object.assign(p, makeParticle(false)); }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fillStyle = `rgba(216,189,138,${p.alpha})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(frame);
+  }
+  if (COUNT > 0) requestAnimationFrame(frame);
+}
+
+/* ===========================================================
+   FINAL-SECTION PETALS
+   =========================================================== */
+function initPetals(){
+  const canvas = document.getElementById('petals-canvas');
+  const ctx = canvas.getContext('2d');
+  const section = document.getElementById('final-section');
+  let w,h,dpr,running=false,petals=[];
+  const COUNT = prefersReduced ? 0 : (isCoarsePointer ? 10 : 18);
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio||1,2);
+    w = section.clientWidth; h = section.clientHeight;
+    canvas.width = w*dpr; canvas.height = h*dpr;
+    canvas.style.width=w+'px'; canvas.style.height=h+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+  function make(initial){
+    return {
+      x: Math.random()*w,
+      y: initial ? Math.random()*h : h + 20,
+      r: Math.random()*4+3,
+      speedY: -(Math.random()*0.35+0.15),
+      drift: Math.random()*0.6+0.2,
+      phase: Math.random()*Math.PI*2,
+      rot: Math.random()*Math.PI,
+      rotSpeed: (Math.random()-0.5)*0.01,
+      alpha: Math.random()*0.4+0.25
+    };
+  }
+  resize();
+  for(let i=0;i<COUNT;i++) petals.push(make(true));
+  window.addEventListener('resize', resize);
+
+  let t=0;
+  function frame(){
+    if(!running) return;
+    ctx.clearRect(0,0,w,h);
+    t+=16;
+    petals.forEach(p=>{
+      p.y += p.speedY;
+      p.x += Math.sin(t*0.0007+p.phase)*p.drift*0.4;
+      p.rot += p.rotSpeed;
+      if(p.y < -20){ Object.assign(p, make(false)); }
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = `rgba(110,42,46,${p.alpha*0.55})`;
+      ctx.beginPath();
+      ctx.ellipse(0,0,p.r,p.r*1.7,0,0,Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+    });
+    requestAnimationFrame(frame);
+  }
+  if (COUNT > 0 && 'IntersectionObserver' in window){
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting && !running){ running = true; requestAnimationFrame(frame); }
+        else if(!entry.isIntersecting){ running = false; }
+      });
+    }, { threshold: 0.15 });
+    io.observe(section);
+  }
+}
+
+/* ===========================================================
+   ENVELOPE OPEN SEQUENCE
+   =========================================================== */
+let hasOpened = false;
+function openLetter(){
+  if (hasOpened) return;
+  hasOpened = true;
+
+  playPaperSound();
+
+  const seal = document.getElementById('wax-seal');
+  const flap = document.getElementById('flap');
+  const peek = document.getElementById('letter-peek');
+  const veil = document.getElementById('veil');
+  const hero = document.getElementById('hero');
+  const heroHint = document.getElementById('hero-hint');
+  const openBtn = document.getElementById('open-btn');
+
+  if (prefersReduced){
+    document.body.classList.remove('no-scroll');
+    gsap.to(veil, { opacity:1, duration:.3, onComplete(){
+      hero.classList.add('is-hidden');
+      gsap.to(veil, { opacity:0, duration:.4, delay:.1 });
+    }});
+    return;
+  }
+
+  const tl = gsap.timeline({ defaults:{ ease:'var(--ease-cinematic)' } });
+
+  tl.to(seal, { scale:.9, duration:.12, ease:'power1.in' })
+    .to(seal.querySelector('.seal-half.left'), { x:-14, y:6, rotate:-25, opacity:0, duration:.7, ease:'power2.in' }, '+=.02')
+    .to(seal.querySelector('.seal-half.right'), { x:14, y:8, rotate:25, opacity:0, duration:.7, ease:'power2.in' }, '<')
+    .to(flap, { rotateX:-165, duration:1.15, ease:'power2.inOut' }, '-=.45')
+    .to(peek, { opacity:1, y:'-58%', scale:1.03, duration:1.05, ease:'power2.out' }, '-=.85')
+    .to(heroHint, { opacity:0, duration:.4 }, '-=.9')
+    .to(openBtn, { opacity:0, duration:.4 }, '<')
+    .to({}, { duration:.5 }) // a beat of stillness
+    .to(veil, { opacity:1, duration:.6, ease:'power1.inOut' })
+    .call(() => {
+      document.body.classList.remove('no-scroll');
+      hero.classList.add('is-hidden');
+    })
+    .to(veil, { opacity:0, duration:.9, ease:'power1.inOut' })
+    .call(() => {
+      const cue = document.getElementById('scroll-cue');
+      gsap.to(cue, { opacity:1, duration:.8 });
+    });
+}
+
+function initEnvelopeInteraction(){
+  const openBtn = document.getElementById('open-btn');
+  const seal = document.getElementById('wax-seal');
+  const envelope = document.getElementById('envelope');
+  [openBtn, seal, envelope].forEach(target => {
+    target.addEventListener('click', openLetter);
+  });
+  [seal, document.getElementById('stamp')].forEach(t => {
+    // stamp has its own secret handler; prevent it from also triggering open
+  });
+  document.getElementById('stamp').addEventListener('click', (e) => e.stopPropagation());
+  envelope.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openLetter(); } });
+
+  // initial entrance of hero copy
+  gsap.timeline()
+    .to('#hero-hint', { opacity:1, duration:1.1, delay:.3, ease:'power2.out' })
+    .to('#open-btn', { opacity:1, duration:1, ease:'power2.out' }, '-=.5');
+}
+
+/* ===========================================================
+   SCROLLTRIGGER ANIMATIONS
+   =========================================================== */
+function initScrollAnimations(){
+  gsap.registerPlugin(ScrollTrigger);
+
+  const mm = gsap.matchMedia();
+
+  /* ---- Overall scroll progress bar ---- */
+  gsap.to('#progress-fill', {
+    height: '100%',
+    ease: 'none',
+    scrollTrigger: { trigger: document.body, start: 'top top', end: 'bottom bottom', scrub: 0.3 }
+  });
+
+  /* ---- LETTER: desktop/no-reduced-motion → pinned scrub ink-writing ---- */
+  mm.add('(prefers-reduced-motion: no-preference) and (min-width: 769px)', () => {
+    const wrapper = document.getElementById('letter-pin-wrapper');
+    const page = document.getElementById('letter-page');
+    const paragraphs = gsap.utils.toArray('.letter-line');
+
+    const tl = gsap.timeline();
+    paragraphs.forEach((p) => {
+      const chars = p.querySelectorAll('.ink-char');
+      tl.to(chars, { opacity:1, filter:'blur(0px)', color:'var(--ink)', duration:.5, stagger:.016, ease:'none' })
+        .to({}, { duration:.28 });
+    });
+
+    const st = ScrollTrigger.create({
+      trigger: wrapper, start:'top top', end:'bottom bottom',
+      pin: page, scrub:0.6, animation: tl
+    });
+
+    gsap.to('#paper-sheet', {
+      y: -26, ease:'none',
+      scrollTrigger: { trigger: wrapper, start:'top top', end:'bottom bottom', scrub:0.6 }
+    });
+
+    return () => { st.kill(); };
+  });
+
+  /* ---- LETTER: mobile / reduced-motion → simple per-paragraph reveal ---- */
+  mm.add('(max-width: 768px), (prefers-reduced-motion: reduce)', () => {
+    const paragraphs = gsap.utils.toArray('.letter-line');
+    paragraphs.forEach((p) => {
+      const chars = p.querySelectorAll('.ink-char');
+      gsap.to(chars, {
+        opacity:1, filter:'blur(0px)', color:'var(--ink)', duration:.6, stagger:.012, ease:'none',
+        scrollTrigger: { trigger: p, start:'top 88%', toggleActions:'play none none reverse' }
+      });
+    });
+  });
+
+  /* ---- MEMORIES: polaroid reveal + hover tilt ---- */
+  const polaroids = gsap.utils.toArray('.polaroid');
+  polaroids.forEach((card, i) => {
+    const baseRot = hashRotate(i * 3) * 2;
+    gsap.set(card, { rotate: baseRot });
+    gsap.fromTo(card,
+      { opacity:0, y:70, rotate: baseRot * 2.4, scale:.92 },
+      { opacity:1, y:0, rotate: baseRot, scale:1, duration:1.1, delay: i*0.08, ease:'power3.out',
+        scrollTrigger: { trigger: card, start:'top 90%', toggleActions:'play none none reverse' } }
+    );
+
+    if (!isCoarsePointer && !prefersReduced){
+      const qx = gsap.quickTo(card, 'rotationY', { duration:.5, ease:'power3' });
+      const qy = gsap.quickTo(card, 'rotationX', { duration:.5, ease:'power3' });
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width - 0.5;
+        const py = (e.clientY - rect.top) / rect.height - 0.5;
+        qx(px * 14);
+        qy(-py * 14);
+      });
+      card.addEventListener('mouseleave', () => { qx(0); qy(0); });
+    }
+  });
+
+  /* ---- APPRECIATION: ink reveal + underline draw ---- */
+  gsap.utils.toArray('.appreciation-line').forEach((li) => {
+    const chars = li.querySelectorAll('.ink-char');
+    const dash = li.querySelector('.ink-underline path');
+    const bullet = li;
+    const tl = gsap.timeline({
+      scrollTrigger: { trigger: li, start:'top 85%', toggleActions:'play none none none' }
+    });
+    tl.to(li, { '--bullet-op':1, duration:.01 })
+      .to(chars, { opacity:1, filter:'blur(0px)', color:'var(--ink)', duration:.5, stagger:.014, ease:'none' })
+      .to(li, { color:'var(--gold)', duration:0 }, '<')
+      .fromTo(dash, { strokeDashoffset:1 }, { strokeDashoffset:0, duration:.6, ease:'power2.out' }, '-=.15');
+
+    gsap.to(li, {
+      '--dummy': 1,
+      scrollTrigger: { trigger: li, start:'top 85%', toggleActions:'play none none none' },
+      onStart(){ li.style.setProperty('--reveal', '1'); }
+    });
+  });
+  // bullet dash reveal
+  gsap.utils.toArray('.appreciation-line::before');
+
+  gsap.utils.toArray('.appreciation-line').forEach((li) => {
+    gsap.to(li, {
+      scrollTrigger: { trigger: li, start:'top 85%', toggleActions:'play none none none' },
+      onStart(){ }
+    });
+  });
+
+  /* ---- BIRTHDAY MESSAGE ---- */
+  gsap.to('.big-heading', {
+    opacity:1, y:0, scale:1, duration:1.3, ease:'power3.out',
+    scrollTrigger: { trigger:'#birthday-section', start:'top 75%', toggleActions:'play none none reverse' }
+  });
+  gsap.utils.toArray('.message-body p').forEach((p, i) => {
+    gsap.to(p, {
+      opacity:1, y:0, duration:1, delay:i*0.12, ease:'power2.out',
+      scrollTrigger: { trigger:'#birthday-section', start:'top 60%', toggleActions:'play none none reverse' }
+    });
+  });
+
+  /* ---- FINAL SECTION ---- */
+  gsap.to('.final-section::before', {}); // no-op safeguard
+  gsap.to('#final-section', {
+    scrollTrigger: {
+      trigger:'#final-section', start:'top 70%', end:'top 20%', scrub:0.5,
+      onUpdate(self){ document.querySelector('#final-section').style.setProperty('--warm', self.progress); }
+    }
+  });
+  gsap.fromTo('#final-section', { }, {
+    scrollTrigger: { trigger:'#final-section', start:'top 80%', end:'top 30%', scrub:0.6 }
+  });
+
+  const finalTl = gsap.timeline({
+    scrollTrigger: { trigger:'#final-content', start:'top 78%', toggleActions:'play none none reverse' }
+  });
+  finalTl
+    .to('#final-heading', { opacity:1, y:0, duration:1, ease:'power2.out' })
+    .to('#final-line-1', { opacity:1, y:0, duration:.8, ease:'power2.out' }, '-=.5')
+    .to('#final-line-2', { opacity:1, y:0, duration:.8, ease:'power2.out' }, '-=.4')
+    .to('#final-thanks', { opacity:1, y:0, duration:.8, ease:'power2.out' }, '-=.3')
+    .to('#signature', { opacity:1, clipPath:'inset(0 0% 0 0)', duration:1.3, ease:'power2.inOut' }, '-=.2')
+    .to('.pressed-flower-final', { opacity:1, y:0, scale:1, duration:1, ease:'power2.out' }, '-=.7');
+
+  const warmGlow = document.querySelector('#final-section');
+  gsap.fromTo('#final-section::before', {}, {});
+  gsap.to({}, {
+    scrollTrigger: {
+      trigger:'#final-section', start:'top 70%', end:'top 20%', scrub:0.5,
+      onUpdate(self){
+        warmGlow.style.setProperty('--w', self.progress);
+      }
+    }
+  });
+}
+
+/* ===========================================================
+   INIT
+   =========================================================== */
+function boot(){
+  renderContent();
+  initEnvelopeInteraction();
+  initDust();
+  initPetals();
+  initScrollAnimations();
+
+  document.body.classList.add('is-ready');
+
+  window.addEventListener('load', () => { if (window.ScrollTrigger) ScrollTrigger.refresh(); });
+  setTimeout(() => { if (window.ScrollTrigger) ScrollTrigger.refresh(); }, 600);
+}
+
+if (document.fonts && document.fonts.ready){
+  document.fonts.ready.then(boot).catch(boot);
+  setTimeout(boot, 1200); // safety net in case fonts.ready hangs
+} else {
+  boot();
+}
+let booted = false;
+const originalBoot = boot;
+boot = function(){ if (booted) return; booted = true; originalBoot(); };
+
+})();
+</script>
+</body>
+</html>
